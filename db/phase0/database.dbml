@@ -4,9 +4,12 @@
 // Creating tables
 Table users {
   id uuid [pk, default: `uuid_generate_v4()`]
+  parent_id uuid [ref: > users.id, note: 'null if user is parent; otherwise, user is child account']
   name varchar [not null]
-  email varchar [not null, unique]
-  email_verified boolean [note: 'only allow user to login after email verified']
+  email varchar [not null]
+  email_verified boolean [note: 'only allow parent to login after email verified']
+  phone_number varchar(20)
+  phone_number_verified boolean
   created_at timestamp [default: `now()`]
   updated_at timestamp
   deleted_at timestamp
@@ -17,9 +20,8 @@ Table user_details {
   user_id uuid [ref: - users.id]
   full_name varchar
   gender gender_type
+  date_of_birth date
   avatar_url varchar
-  phone_number varchar(20)
-  phone_number_verified boolean
   address varchar
   city varchar
   state varchar
@@ -32,20 +34,61 @@ Table user_details {
 Table otps {
   id int [pk, increment]
   user_id uuid [ref: > users.id]
-  otp varchar
+  otp varchar [note: 'this login opt is only valid in a period of time']
   created_at timestamp [default: `now()`]
 }
 
-Table childs {
+Table activities {
   id uuid [pk, default: `uuid_generate_v4()`]
-  parent_id uuid [ref: > users.id]
-  name varchar [not null]
-  date_of_birth date [not null]
-  gender gender_type
-  avatar_url varchar
+  content varchar
+  url varchar [note: 'external url embbeded into the activity']
+  type activity_type
+  assigned_to uuid [ref: > users.id]
+  status activity_status
+  due_date date
+  created_by uuid [ref: > users.id]
   created_at timestamp [default: `now()`]
+  updated_by uuid [ref: > users.id]
+  updated_at timestamp
+  deleted_by uuid [ref: > users.id]  
+  deleted_at timestamp
+}
+
+Table activity_media {
+  id int [pk, increment]
+  activity_id uuid [ref: > activities.id]
+  description varchar
+  url varchar [note: 'photo, video,...']
+}
+
+Table activity_comments {
+  id int [pk, increment]
+  content varchar
+  medium_url varchar
+  activity_id uuid [ref: > activities.id]
+  author uuid [ref: > users.id]
+  created_at timestamp
   updated_at timestamp
   deleted_at timestamp
+}
+
+Table activity_rewards {
+  id int [pk, increment]
+  activity_id uuid [ref: > activities.id]
+  description varchar
+  value int
+  unit unit_type
+  type reward_type
+}
+
+Table user_rewards {
+  id int [pk, increment]
+  activity_id uuid [ref: > activities.id]
+  user_id uuid [ref: > users.id]
+  description varchar
+  value int
+  unit unit_type
+  type reward_type  
 }
 
 Table countries {
@@ -63,3 +106,34 @@ Enum gender_type {
   other [note: 'don\'t want to show gender']
 }
 
+Enum activity_type {
+  disk_washing
+  house_cleaning
+  tree_watering
+}
+
+Enum activity_status {
+  new
+  assign
+  inprogress
+  postpone
+  cancel
+  complete
+}
+
+Enum unit_type {
+  minute
+  hour
+  day
+  vnd
+  item
+}
+
+Enum reward_type {
+  money
+  toy
+  travel
+  sightseeing
+  playing
+  watching
+}
