@@ -40,12 +40,12 @@ Table otps {
 
 Table activities {
   id uuid [pk, default: `uuid_generate_v4()`]
-  content varchar
-  url varchar [note: 'external url embbeded into the activity']
+  content text
+  content_url varchar [note: 'external url embbeded into the activity content']
   type activity_type
-  assigned_to uuid [ref: > users.id]
   status activity_status
   due_date date
+  assigned_to uuid [ref: > users.id]
   created_by uuid [ref: > users.id]
   created_at timestamp [default: `now()`]
   updated_by uuid [ref: > users.id]
@@ -56,39 +56,40 @@ Table activities {
 
 Table activity_media {
   id int [pk, increment]
+  medium_id uuid [ref: > media.id]
   activity_id uuid [ref: > activities.id]
-  description varchar
-  url varchar [note: 'photo, video,...']
+
+  indexes {
+    (medium_id, activity_id) [unique]
+  }
+}
+
+Table media {
+  id uuid [pk, default: `uuid_generate_v4()`]
+  title varchar
+  description text
+  url varchar [note: 'photos, audios, videos,... url']
 }
 
 Table activity_comments {
   id int [pk, increment]
-  content varchar
-  medium_url varchar
   activity_id uuid [ref: > activities.id]
   author uuid [ref: > users.id]
+  content text
+  content_url varchar
   created_at timestamp
   updated_at timestamp
   deleted_at timestamp
 }
 
-Table activity_rewards {
-  id int [pk, increment]
-  activity_id uuid [ref: > activities.id]
-  description varchar
-  value int
-  unit unit_type
-  type reward_type
-}
-
-Table user_rewards {
+Table rewards {
   id int [pk, increment]
   activity_id uuid [ref: > activities.id]
   user_id uuid [ref: > users.id]
-  description varchar
+  description text
   value int
   unit unit_type
-  type reward_type  
+  type reward_type
 }
 
 Table countries {
@@ -125,15 +126,16 @@ Enum unit_type {
   minute
   hour
   day
-  vnd
+  money
   item
+  others
 }
 
 Enum reward_type {
   money
   toy
   travel
-  sightseeing
-  playing
-  watching
+  playing [note: 'playing @ VinKE, kizciti, tiNiWorld']
+  watching [note: 'watching tv, youtube, movie,...']
+  others
 }
