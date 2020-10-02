@@ -6,4 +6,4 @@ Các yêu cầu tính năng cơ bản cho Kay 1.0 sẽ được mô tả chi ti�
 
 ### Giai đoạn 0
 * [Overview](specs/phase0/overview.md)
-    
+* [DB Schema](db/phase0/database.dbml)
